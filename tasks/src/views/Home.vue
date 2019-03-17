@@ -1,21 +1,30 @@
 <template>
   <div v-if="loaded">
     <div class="container">
-      <task-list
-        :items="tasks"
-        @add-task="handleAddTask"
-        @remove-task="handleRemoveTask"
-      />
-      <category-list
-        :items="categories"
-        @apply-category="handleApplyCategory"
-      />
-      <button
-        class="submit-btn waves-effect waves-light btn"
-        @click.prevent="handleSubmit"
-      >
-        <i class="material-icons">save_alt</i>
-      </button>
+      <transition name="fly-in" appear>
+        <task-list
+          id="task-list"
+          :items="tasks"
+          @add-task="handleAddTask"
+          @remove-task="handleRemoveTask"
+        />
+      </transition>
+      <transition name="fly-in" appear>
+        <category-list
+          id="category-list"
+          :items="categories"
+          @apply-category="handleApplyCategory"
+        />
+      </transition>
+      <transition name="fly-in" appear>
+        <button
+          id="submit-button"
+          class="submit-btn waves-effect waves-light btn"
+          @click.prevent="handleSubmit"
+        >
+          <i class="material-icons">save_alt</i>
+        </button>
+      </transition>
     </div>
   </div>
   <div v-else>
@@ -112,5 +121,22 @@ export default {
 <style scoped lang="scss">
 .submit-btn {
   margin-top: 2rem;
+}
+
+.fly-in-enter-active {
+  transition: all 0.5s ease-out;
+}
+
+.fly-in-enter {
+  transform: translateY(40px);
+  opacity: 0;
+}
+
+#category-list {
+  transition-delay: 0.2s;
+}
+
+#submit-button {
+  transition-delay: 0.4s;
 }
 </style>
