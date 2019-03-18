@@ -12,14 +12,17 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 import { EventBus } from "@/shared/event-bus.js";
 
 export default {
   name: "user-interaction-panel",
-  data() {
-    return {
-      notification: null
-    };
+  computed: {
+    ...mapState({
+      notification: state =>
+        state.notification.message ? state.notification : null
+    })
   },
   mounted() {
     EventBus.$on("notify-user", notification => {

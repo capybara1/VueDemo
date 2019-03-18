@@ -1,7 +1,7 @@
 <template>
   <div class="collection">
     <li v-for="item in items" class="collection-item" :key="item.id">
-      <task-item :item="item" @remove-task="$emit('remove-task', $event)" />
+      <task-item :id="item.id" />
     </li>
     <li class="collection-item">
       <button

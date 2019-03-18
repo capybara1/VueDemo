@@ -2,12 +2,7 @@
   <div v-if="loaded">
     <div class="container">
       <transition name="fly-in" appear>
-        <task-list
-          id="task-list"
-          :items="tasks"
-          @add-task="handleAddTask"
-          @remove-task="handleRemoveTask"
-        />
+        <task-list id="task-list" :items="tasks" @add-task="handleAddTask" />
       </transition>
       <transition name="fly-in" appear>
         <category-list
@@ -33,21 +28,17 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
+import {
+  ADD_TASK,
+  APPLY_CATEGORY,
+  GENERATE_OUTPUT
+} from "@/store/mutationTypes";
+import { FETCH_DATA } from "@/store/actionTypes";
 import TaskList from "@/components/TaskList.vue";
 import CategoryList from "@/components/CategoryList.vue";
 import Spinner from "@/components/Spinner.vue";
-import { TODAY, generateId } from "@/shared/utils";
-import { mapToRepresentationModel } from "@/shared/converters";
-import { EventBus } from "@/shared/event-bus.js";
-
-const createTaskModel = (label = "") => {
-  const result = {
-    id: generateId(),
-    due: TODAY,
-    label: label
-  };
-  return result;
-};
 
 export default {
   name: "home",
@@ -56,64 +47,27 @@ export default {
     CategoryList,
     Spinner
   },
-  data() {
-    return {
-      loaded: false,
-      tasks: [],
-      categories: [],
-      templates: []
-    };
+  computed: {
+    ...mapState({
+      loaded: state => !state.loading.isLoading,
+      tasks: "tasks",
+      categories: "categories",
+      templates: "templates"
+    })
   },
   methods: {
     handleAddTask() {
-      this.tasks.push({
-        id: generateId(),
-        label: "",
-        due: TODAY
-      });
-    },
-    handleRemoveTask(event) {
-      this.tasks.splice(this.tasks.indexOf(event.item), 1);
+      this.$store.commit(ADD_TASK);
     },
     handleApplyCategory(event) {
-      const category = this.categories.find(e => e.id === event.item.id);
-      if (!category) return;
-      const tags = category.tags;
-      const newLabels = this.templates
-        .filter(i => i.tags.some(t => tags.includes(t)))
-        .map(i => i.label);
-      if (newLabels.length > 0) {
-        const newTasks = newLabels.map(l => createTaskModel(l));
-        this.tasks.push(...newTasks);
-      }
+      this.$store.commit(APPLY_CATEGORY, { id: event.item.id });
     },
     handleSubmit() {
-      const representation = this.tasks.map(mapToRepresentationModel);
-      const data = encodeURIComponent(JSON.stringify(representation));
-      window.open("events?descr=" + data, "_blank");
+      this.$store.commit(GENERATE_OUTPUT);
     }
   },
   mounted() {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("data.json");
-        const data = await response.json();
-        this.categories = data.categories.map(i => {
-          i.id = generateId();
-          return i;
-        });
-        this.templates = data.templates;
-        this.loaded = true;
-      } catch (error) {
-        EventBus.$emit("notify-user", {
-          message:
-            "Something went wrong: unable to load 'data.json'. Please ensure network connectivity and try again.",
-          level: "error"
-        });
-      }
-    };
-
-    fetchData();
+    this.$store.dispatch(FETCH_DATA);
   }
 };
 </script>
